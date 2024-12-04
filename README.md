@@ -1,0 +1,1 @@
+# Okul panosu blu
