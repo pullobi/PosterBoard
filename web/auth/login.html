@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="/../style.css">
+</head>
+<body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+    <div class="login-container">
+        <div class="login-window">
+            <h1>Login</h1>
+            <form action="#" method="POST" id="login-form">
+                <input type="text" id="username" name="username" placeholder="Username" required>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <button type="button" onclick="handleLogin()">Login</button>
+            </form>
+            <a href="#" onclick="alert('Too bad')">Forgot Password?</a>
+        </div>
+    </div>
+    <script>
+        function handleLogin() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // Get the server IP and port from the current window location
+            const baseURL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
+            const loginURL = `${baseURL}/login/`;
+
+            // Use fetch with headers containing credentials
+            fetch(loginURL, {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Username': username,  // Send username in headers
+                    'Password': password   // Send password in headers
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert("Login successful!");
+                    // Handle successful login logic here
+                    window.location = `${baseURL}/upload`;
+                } else if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert("Something happened");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

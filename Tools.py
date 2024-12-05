@@ -1,9 +1,4 @@
-import shutil
-import os
-import markdown
-
-import os
-import pypandoc
+import shutil, os, markdown, pypandoc
 
 def convertToMarkdown(document: str):
     docPath = f"./temp/{document}"
@@ -19,6 +14,8 @@ def convertToMarkdown(document: str):
         print(f"Document converted to markdown and saved to {targetDocPath}")
     except Exception as e:
         print(f"Error during conversion: {str(e)}")
+
+## Adding documents
 def AddDocumentToPosterBoard(forGrade: str, DocumentName: str):
     docPath = f"./temp/{DocumentName}"
     targetGradeBoard = f"./content/{forGrade}/"
@@ -39,11 +36,11 @@ def AddDocumentToPosterBoard(forGrade: str, DocumentName: str):
     
     print(f"Document {DocumentName} moved to {targetGradeBoard} and original removed.")
 
+## For Rendering the converted markdown
 def MarkdownToHTML(markdownPath: str, grade: str) -> str:
     """Converts markdown to HTML, then returns it."""
 
     # Read the markdown file
-    ##
     with open(f"./content/{grade}/{markdownPath}", 'r') as markdown_file:
         markdown_content = markdown_file.read()
     
@@ -52,11 +49,31 @@ def MarkdownToHTML(markdownPath: str, grade: str) -> str:
     
     return html_content
 
+def injectStyle(html_content: str) -> str:
+    """Injects the styles into the HTML content by reading the CSS file."""
+    
+    # Read the CSS file
+    with open("./web/style.css", 'r') as file:
+        style = file.read()
+
+    # Create a <style> tag with the CSS content
+    style_tag = f"<style>{style}</style>"
+
+    # Find the position of the <head> tag and inject the <style> tag after it
+    head_index = html_content.find("<head>")
+    if head_index != -1:
+        head_index += len("<head>")
+        html_content = html_content[:head_index] + style_tag + html_content[head_index:]
+    else:
+        print("Warning: <head> tag not found in the HTML content. Style not injected.")
+
+    return html_content
+
 def TilingWindowHTMLMaker(markdownPathArray, grade: str) -> str:
     """Modifies the existing index.html by adding iframes for each document dynamically and returns the modified HTML as a string."""
     
     # Path to the existing index.html
-    index_path = './web/index.html'
+    index_path = './web/template/index.html'
 
     # Check if index.html exists
     if not os.path.exists(index_path):
@@ -75,35 +92,25 @@ def TilingWindowHTMLMaker(markdownPathArray, grade: str) -> str:
     
     body_content = html_content[body_start + len('<body>'):body_end]
 
-    with open("./web/style.css", 'r') as file:
-        style = file.read()
-
-    # Add the title and grade-specific heading
-    new_content = f"""
-    <style>
-    {style}
-    </style>
-    """
-
-    # Loop through each markdown file in the array and a
+    # Loop through each markdown file in the array and add it
+    new_content = ""
     for markdownPath in markdownPathArray:
         # Convert each markdown file to HTML
         html_document = MarkdownToHTML(markdownPath, grade)
 
-        
-        # Wrap the HTbML content inside an iframe
+        # Wrap the HTML content inside an iframe
         iframe_code = f"""
             <div class="window"><div class="gap">{html_document}</div></div>
-            
         """
         
         # Add iframe to the new content
         new_content += iframe_code
-    
-
 
     # Replace the old body content with the new content
     updated_html = html_content[:body_start + len('<body>')] + new_content + html_content[body_end:]
+
+    # Inject styles into the updated HTML
+    updated_html = injectStyle(updated_html)
 
     # Return the dynamically modified HTML content
     return updated_html
@@ -123,6 +130,7 @@ def getDocsFromGrade(grade: str):
         return files
     except Exception as e:
         return {"error": str(e)}
+
 def assemble(grade: str):
     """Return TilingWindowHTMLMaker(getDocsFromGrade(grade))"""
     # Get list of document filenames for the specified grade
@@ -135,3 +143,10 @@ def assemble(grade: str):
     else:
         # If there's an error in getDocsFromGrade, return the error message
         return documents
+
+def html(path: str, stylesheet: str):
+    """Return html"""
+    with open(path, 'r') as file:
+        html = file.read()
+    html = injectStyle(html_content=html)
+    return html

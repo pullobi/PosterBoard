@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registering Page</title>
+    <link rel="stylesheet" href="/../style.css">
+</head>
+<body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+    <div class="login-container">
+        <div class="login-window">
+            <h1>Register</h1>
+            <form action="#" method="POST" id="login-form">
+                <input type="text" id="username" name="username" placeholder="Username" required>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <h3>Register key:</h3>
+                <input type="password" id="key" name="key" placeholder="Register key" required>
+                <button type="button" onclick="check()">Register</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const secret = document.getElementById("key");
+        
+        function check() {
+            if (secret.value == "") { 
+                alert("You need a register key. Contact administrator.");
+            } else {
+                reg();
+            }
+        }
+
+        function reg() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            
+            // Get the server IP and port from the current window location
+            const baseURL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+
+            const registerURL = `${baseURL}/register/`;
+
+            // Prepare the request data as JSON
+            const data = {
+                username: username,
+                password: password
+            };
+
+            // Send the POST request with the secret key in the headers
+            fetch(registerURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Register-Key': secret.value  // Sending secret key in the header
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert("Register successful!");
+                    // Redirect to login page
+                    window.location = `${baseURL}/login/`;
+                } else if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert("Something happened");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

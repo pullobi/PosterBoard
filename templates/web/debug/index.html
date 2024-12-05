@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Panel</title>
+    <style>
+        /* General body settings */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7; /* Light soft background */
+    color: #f4f4f4; /* Soft white text */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Header styles */
+h1, h2, h3 {
+    color: #2b7a4c; /* Soft pastel green */
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Form styles */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 500px;
+    margin: 10px;
+}
+
+/* Input field styles */
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #e2e2e2;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+/* Button styles */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #2b7a4c; /* Pastel green accent */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #218c3c; /* Darker pastel green on hover */
+}
+
+/* List of users */
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px;
+}
+
+li {
+    background-color: #fff;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer styles */
+footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+}
+
+footer p {
+    margin: 0;
+}
+    </style>
+</head>
+<body>
+    <h1>Debug Panel</h1>
+    <h2>User Management</h2>
+
+    <h3>Existing Users:</h3>
+    <ul>
+        {% for user in users %}
+            <li>ID: {{ user.id }} - Username: {{ user.username }}</li>
+        {% else %}
+            <li>No users found.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Add User:</h3>
+    <form action="/debug/add_user" method="POST">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Add User</button>
+    </form>
+
+    <h3>Delete User:</h3>
+    <form action="/debug/delete_user" method="POST">
+        <label for="delete-username">Username:</label>
+        <input type="text" id="delete-username" name="username" required>
+        <button type="submit">Delete User</button>
+    </form>
+
+    <footer>
+        <p>Debug Panel Footer</p>
+    </footer>
+</body>
+</html>
