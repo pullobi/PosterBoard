@@ -1,4 +1,5 @@
 import shutil, os, markdown, pypandoc
+from flask import jsonify
 
 def convertToMarkdown(document: str):
     docPath = f"./temp/{document}"
@@ -49,11 +50,11 @@ def MarkdownToHTML(markdownPath: str, grade: str) -> str:
     
     return html_content
 
-def injectStyle(html_content: str) -> str:
+def injectStyle(html_content: str, stylesheet) -> str:
     """Injects the styles into the HTML content by reading the CSS file."""
     
     # Read the CSS file
-    with open("./web/style.css", 'r') as file:
+    with open(stylesheet, 'r') as file:
         style = file.read()
 
     # Create a <style> tag with the CSS content
@@ -110,7 +111,7 @@ def TilingWindowHTMLMaker(markdownPathArray, grade: str) -> str:
     updated_html = html_content[:body_start + len('<body>')] + new_content + html_content[body_end:]
 
     # Inject styles into the updated HTML
-    updated_html = injectStyle(updated_html)
+    updated_html = injectStyle(updated_html, stylesheet="./web/style.css")
 
     # Return the dynamically modified HTML content
     return updated_html
@@ -148,5 +149,32 @@ def html(path: str, stylesheet: str):
     """Return html"""
     with open(path, 'r') as file:
         html = file.read()
-    html = injectStyle(html_content=html)
+    html = injectStyle(html_content=html, stylesheet=stylesheet)
     return html
+
+def DirectoryTreeJSONFormat(inFolder: str) -> dict:
+    """Returns the directory tree in a folder as JSON."""
+
+    def build_tree(path):
+        """Recursively builds a dictionary representation of the directory tree."""
+        tree = {"name": os.path.basename(path), "type": "directory", "children": []}
+
+        try:
+            for entry in os.listdir(path):
+                entry_path = os.path.join(path, entry)
+                if os.path.isdir(entry_path):
+                    tree["children"].append(build_tree(entry_path))
+                else:
+                    tree["children"].append({"name": entry, "type": "file"})
+        except PermissionError:
+            tree["children"].append({"name": "Permission denied", "type": "error"})
+
+        return tree
+
+    if not os.path.exists(inFolder):
+        return {"error": f"Folder {inFolder} does not exist."}
+
+    if not os.path.isdir(inFolder):
+        return {"error": f"Path {inFolder} is not a directory."}
+
+    return build_tree(inFolder)

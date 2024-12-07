@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uploader</title>
+    <!-- Marked.js script -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        let currentPath = '';  // Store the current path
+
+        async function fetchDirectory(path = '') {
+            currentPath = path;
+            const sanitizedPath = path.startsWith('/') ? path.substring(1) : path;
+            const response = await fetch(`/get/tree?path=${encodeURIComponent(sanitizedPath)}`);
+            const data = await response.json();
+
+            if (data.error) {
+                console.error(data.error);
+                alert(data.error);
+                return;
+            }
+
+            renderTree(data, path);
+            updateCWD();
+        }
+
+        function renderTree(tree, path) {
+            const sidebar = document.querySelector('.sidebar .content');
+            sidebar.innerHTML = '';
+            const ul = document.createElement('ul');
+            tree.children.forEach(entry => {
+                const li = document.createElement('li');
+                li.textContent = entry.name;
+                li.className = entry.type;
+
+                if (entry.type === 'directory') {
+                    li.addEventListener('click', () => fetchDirectory(`${path}/${entry.name}`));    
+                } else if (entry.type === 'file') {
+                    li.addEventListener('click', () => showFileContent(`${path}/${entry.name}`));
+                }
+
+                ul.appendChild(li);
+            });
+            sidebar.appendChild(ul);
+        }
+
+        async function showFileContent(filePath) {
+            const response = await fetch(`/get/file?path=${encodeURIComponent(filePath)}`);
+            const data = await response.json();
+
+            if (data.error) {
+                console.error(data.error);
+                alert(data.error);
+                return;
+            }
+
+            const rawContentDiv = document.querySelector('.raw-file-content');
+            const markdownDiv = document.querySelector('.markdown-render');
+            const fileContent = data.content;
+
+            document.getElementById('current-file').textContent = currentPath.slice(1) + ":  " + filePath.split('/').pop();
+
+            rawContentDiv.innerHTML = '';
+            markdownDiv.innerHTML = '';
+            rawContentDiv.innerHTML = `<pre style="font-family: monospace; white-space: pre-wrap;">${fileContent}</pre>`;
+
+            if (filePath.endsWith(".md")) {
+                const options = { breaks: true };
+                const styledMarkdown = marked.parse(fileContent, options);
+                markdownDiv.innerHTML = styledMarkdown;
+            } else {
+                markdownDiv.innerHTML = '';
+            }
+        }
+
+        function updateCWD() {
+            var currentWorkingFolder = document.getElementById("current-folder");
+            if (currentPath === "") {
+                currentWorkingFolder.innerHTML = "PosterBoard";
+            } else {
+                currentWorkingFolder.innerHTML = currentPath;
+            }
+        }
+
+        function goUp() {
+            const pathSegments = currentPath.split('/').filter(Boolean);
+            pathSegments.pop();
+            const newPath = pathSegments.join('/');
+            fetchDirectory(newPath);
+            updateCWD();
+        }
+
+        async function upload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (countSlashes(currentPath) < 2) {
+                alert("Go into a directory to upload file");
+                return;
+            }
+
+            if (!file) {
+                alert('Please select a file to upload');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload' + currentPath, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.success);
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('There was an error uploading the file.');
+            }
+            fetchDirectory(currentPath)
+        }
+
+        function countSlashes(str) {
+            return (str.match(/\//g) || []).length;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.file-input-wrapper').addEventListener('click', function() {
+                document.getElementById('fileInput').click(); // Trigger file input click
+            });
+
+            fetchDirectory();
+        });
+    </script>
+</head>
+<body>
+    <div class="center">
+        <div class="sidebar box">
+            <h2 id="current-folder">Sidebar</h2>
+            <div class="container">
+                <div class="button" onclick="goUp()">Back</div>
+            </div>
+            <hr>
+            <div class="content"></div>
+        </div>
+
+        <div class="window box">
+            <h2>File</h2>
+            <div class="container">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" style="display: none;" />
+                    <span>Choose File</span>
+                </div>
+                <div class="button" onclick="upload()">Upload File</div>
+            </div>
+
+            <div class="container-gapped">
+                <h3 id="current-file">Select a file to view contents</h3>
+                <div class="raw-file-content contentbox"></div>
+                <div class="markdown-render contentbox"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

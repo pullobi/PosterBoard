@@ -1,0 +1,163 @@
+/* General body styling */
+body {
+    display: flex;
+    flex-direction: column;
+    background: #242424;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: rgb(171, 171, 171);
+    margin: 0; /* Remove default margin */
+    min-height: 100vh; /* Ensure full viewport height */
+    overflow: hidden;
+}
+
+/* Center container for the layout */
+.center {
+    gap: 16px;
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Optional: Align horizontally */
+    height: 97vh; /* Full height of the viewport minus small padding */
+    padding: 8px;
+}
+
+/* Box styles for components */
+.box {
+    border-radius: 41px;
+    background: linear-gradient(145deg, #272727, #202020);
+    box-shadow: 5px 5px 10px #1b1b1b, -5px -5px 10px #2d2d2d;
+    padding: 28px;
+    display: flex;
+    flex-direction: column; /* Flex children if necessary */
+    justify-content: flex-start;
+    overflow: hidden; /* Prevent overflow */
+}
+
+/* Sidebar specific styling */
+.sidebar {
+    width: 30%;
+    height: 90%; /* Match most of the viewport height */
+    overflow-y: auto; /* Add scrolling for large directories */
+    padding: 16px;
+}
+
+/* File tree styling in sidebar */
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    cursor: pointer;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+    border: #1b1b1b5d 2px solid;
+}
+
+.sidebar li:hover {
+    background: #333;
+    color: #fff;
+}
+
+.sidebar li.directory {
+    font-weight: bold;
+}
+
+.sidebar li.file {
+    font-style: italic;
+}
+
+/* Main window styling */
+.window {
+    width: 70%;
+    height: 90%; /* Match most of the viewport height */
+    overflow-y: auto; /* Allow scrolling for large content */
+    padding: 16px;
+}
+
+.window .content pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: monospace;
+    padding: 10px;
+    background: #1e1e1e;
+    color: #ddd;
+    border-radius: 8px;
+}
+
+/* Back button styles */
+.button {
+    padding: 8px 12px;
+    background-color: #1e1e1e;
+    width: fit-content;
+    border-radius: 4096px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.button:hover {
+    background-color: #333;
+    transform: scale(1.1); /* Slight zoom effect on hover */
+}
+
+
+
+hr{
+    border: #1e1e1e solid 1px;
+    width: 95%;
+}
+
+.contentbox{
+    border-radius: 24px;
+    background-color: #1b1b1b;
+    padding: 8px;
+}
+.container-gapped{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px;
+}
+
+a {
+    color: #685d8a;
+}
+.container{
+    background-color: #3e3e3ecd;
+    width: fit-content;
+    border-radius: 4096px;
+    padding: 6px;
+    display: flex;
+    gap: 5px;
+    flex-direction: row;
+}
+/* Style the file input to match the button class */
+#fileInput {
+    display: none; /* Hide the default file input */
+}
+
+.file-input-wrapper {
+    padding: 8px 12px;
+    background-color: #1e1e1e;
+    width: fit-content;
+    border-radius: 4096px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-input-wrapper:hover {
+    background-color: #333;
+    transform: scale(1.1);
+}
+
+/* Optional: Add an icon or label to make it more interactive */
+.file-input-wrapper span {
+    font-size: 16px;
+    color: #ddd;
+    padding-left: 8px;
+}
