@@ -1,8 +1,8 @@
 import os
 import Tools
-from flask import jsonify, Flask, request
-from flask_cors import CORS
-from werkzeug.utils import secure_filename
+from flask import jsonify, Flask, request   # type: ignore
+from flask_cors import CORS                 # type: ignore
+from werkzeug.utils import secure_filename  # type: ignore
 
 app = Flask(__name__)
 CORS(app)
