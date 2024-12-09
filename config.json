@@ -1,0 +1,5 @@
+{
+    "port": 5500,
+    "debug": "false",
+    "override_args": "false"
+}

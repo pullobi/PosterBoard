@@ -1,5 +1,26 @@
 import os
 import markdown # type: ignore
+from datetime import datetime
+
+def log(message, app_route, ip): 
+    # Create logs directory if it doesn't exist
+    os.makedirs('./logs', exist_ok=True)
+    
+    # Get current date in format e.g., December-9-2024
+    current_date = datetime.now().strftime("%B-%d-%Y")
+    
+    # Define log file path
+    log_file_path = f'./logs/{current_date}.log'
+    
+    # Construct log message
+    log_entry = f"[📝] Log: {ip} called {app_route} on {datetime.now()}    {message}\n"
+    
+    # Print log to console
+    print(log_entry)
+    
+    # Append log entry to the file
+    with open(log_file_path, 'a') as log_file:
+        log_file.write(log_entry)
 
 
 def convert_to_markdown(document: str):
