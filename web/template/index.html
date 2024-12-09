@@ -2,11 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" type="text/css" href="/web/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <title>Fullscreen on Load</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simulate user interaction by programmatically triggering the fullscreen
+            document.body.addEventListener('click', requestFullscreen);
+            document.body.click();
+
+            // Scroll to the bottom of the page over 9 seconds
+            scrollToBottom();
+        });
+
+        function requestFullscreen() {
+            // Check if the browser supports fullscreen
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+                document.documentElement.msRequestFullscreen();
+            } else {
+                alert("Your browser does not support fullscreen mode.");
+            }
+        }
+
+        function scrollToBottom() {
+            const totalScrollTime = 9000; // 9 seconds for the scroll down
+            const scrollInterval = 10;    // Scroll increment interval (in milliseconds)
+            const totalScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollStep = totalScrollHeight / (totalScrollTime / scrollInterval);
+
+            let scrollPosition = 0;
+
+            // Scroll down
+            const intervalDown = setInterval(() => {
+                scrollPosition += scrollStep;
+                window.scrollTo(0, scrollPosition);
+
+                if (scrollPosition >= totalScrollHeight) {
+                    clearInterval(intervalDown); // Stop scrolling once we've reached the bottom
+                    
+                    // Wait 2 seconds before scrolling back to the top
+                    setTimeout(() => {
+                        scrollToTop(); // Start scrolling back to the top
+                    }, 2000); // 2 seconds delay
+                }
+            }, scrollInterval);
+        }
+
+        function scrollToTop() {
+            const totalScrollTime = 9000; // 9 seconds for the scroll up
+            const scrollInterval = 10;    // Scroll increment interval (in milliseconds)
+            const totalScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollStep = totalScrollHeight / (totalScrollTime / scrollInterval);
+
+            let scrollPosition = document.documentElement.scrollHeight;
+
+            // Scroll up
+            const intervalUp = setInterval(() => {
+                scrollPosition -= scrollStep;
+                window.scrollTo(0, scrollPosition);
+
+                if (scrollPosition <= 0) {
+                    clearInterval(intervalUp); // Stop scrolling once we've reached the top
+                    
+                    // Wait 1 second before refreshing the page
+                    setTimeout(() => {
+                        location.reload(); // Refresh page
+                    }, 1000); // 1 second delay before refresh
+                }
+            }, scrollInterval);
+        }
+    </script>
 </head>
 <body>
-    
+    <h1>Click anywhere to enter fullscreen</h1>
+    <p>Page will automatically enter fullscreen mode when clicked.</p>
+    <div style="height: 2000px;"> <!-- Just to make the page tall enough for scrolling -->
+        <p>Content goes here. Scroll will take 9 seconds to go down and 9 seconds to go up.</p>
+    </div>
 </body>
 </html>

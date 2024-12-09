@@ -1,18 +1,47 @@
+/* Define the color variable */
+:root {
+    --color: #aaaaaa;
+}
+
+body {
+    background: #222222;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.window-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping of child elements */
+    gap: 40px; /* Space between tiles */
+    padding: 2rem;
+    border-radius: 17px;
+    background: linear-gradient(145deg, #1f1f1f, #242424);
+    box-shadow:  5px 5px 29px #0e0e0e,
+             -5px -5px 29px #363636;
+}
+
 .window {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     background-color: #222;
     color: rgb(182, 184, 185);
-    border-radius: 32px;
+    max-width: 40vw;
+    height: auto; /* Adjust height based on content */
+    margin-bottom: 1rem; /* Adds spacing between rows */
+    border-radius: 24px;
+    background: linear-gradient(145deg, #242424, #1f1f1f);
+    box-shadow:  10px 10px 20px #121212,
+                 -10px -10px 20px #323232;
+
 }
-body {
-    background: #333;
-}
+
 .gap {
     padding-top: 3px;
     padding-bottom: 3px;
     margin: 2rem;
     gap: 6px;
 }
+
 a {
     color: #566694;
     text-decoration: none;
@@ -21,7 +50,7 @@ a {
 /* Markdown Elements */
 h1, h2, h3, h4, h5, h6 {
     font-family: inherit;
-    color: #b8c1ec;
+    color: var(--color); /* Use the color variable */
     margin: 1rem 0 0.5rem 0;
 }
 
@@ -29,7 +58,7 @@ p {
     font-family: inherit;
     line-height: 1.6;
     margin: 1rem 0;
-    color: #d1d5db;
+    color: var(--color); /* Use the color variable */
 }
 
 blockquote {
@@ -62,7 +91,7 @@ pre {
 ul, ol {
     padding-left: 1.5rem;
     margin: 1rem 0;
-    color: #d1d5db;
+    color: var(--color); /* Use the color variable */
 }
 
 li {
