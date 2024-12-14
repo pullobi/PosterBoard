@@ -3,7 +3,7 @@ import socket
 import sys
 from Tools import log
 import app
-
+import Colors
 # Default values
 PORT = 5500
 DEBUG = False
@@ -41,7 +41,7 @@ def update_port(config):
             try:
                 PORT = int(arg.split("=")[1])
             except ValueError:
-                print("[❌] Invalid port number provided. Using default port.")
+                print(f"{Colors.color(text='[❌]', color='red')} Invalid port number provided. Using default port.")
                 PORT = 5500  # Default if error
 
 if __name__ == "__main__":
@@ -55,8 +55,8 @@ if __name__ == "__main__":
     local_ip = socket.gethostbyname(socket.gethostname())
     
     # Log the startup message
-    log(message=f"Starting server on {local_ip} with port {PORT}, Debug: {DEBUG}!", 
-        app_route="* App Start *", ip="SYSTEM")
+    log(message=f"Starting server on {local_ip} with port {PORT}, Debug: {DEBUG}.", 
+        app_route="* App Start *", ip=Colors.color(text="SYSTEM", color="indigo"))
     
     # Start the Flask app
     app.main(port=PORT, debug=DEBUG)

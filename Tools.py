@@ -1,6 +1,9 @@
 import os
-import markdown # type: ignore
+import markdown  # type: ignore
 from datetime import datetime
+from docx import Document  # For DOCX conversion
+import PyPDF2  # For PDF conversion
+
 
 def log(message, app_route, ip): 
     # Create logs directory if it doesn't exist
@@ -23,24 +26,105 @@ def log(message, app_route, ip):
         log_file.write(log_entry)
 
 
-def convert_to_markdown(document: str):
-    """Converts a non-Markdown document to Markdown."""
-    doc_path = f"./temp/{document}"
-    target_doc_path = f"./temp/{document}.md"
-
-    if document.endswith('.md'):
-        print(f"Document {document} is already in Markdown format. Skipping conversion.")
-        return
-
-    if not os.path.exists(doc_path):
-        print(f"Error: The document {document} does not exist at {doc_path}.")
-        return
-
+def convert_to_markdown(input_path):
+    """
+    Converts the given document to Markdown format.
+    
+    Parameters:
+        input_path (str): The path to the input file to convert.
+    
+    Returns:
+        str: The path to the converted Markdown file.
+    """
     try:
-        pypandoc.convert_file(doc_path, 'md', outputfile=target_doc_path) # type: ignore
-        print(f"Document converted to markdown and saved to {target_doc_path}")
+        # Extract filename without extension
+        filename = os.path.splitext(os.path.basename(input_path))[0]
+        
+        # Define output path for the Markdown file
+        output_dir = os.path.dirname(input_path)  # Use the same directory as input
+        output_path = os.path.join(output_dir, f"{filename}.md")
+
+        # Skip conversion if it's already a Markdown file
+        if input_path.endswith(".md"):
+            return input_path
+        
+        # Conversion logic based on file type
+        file_extension = os.path.splitext(input_path)[1].lower()
+
+        if file_extension == ".txt":
+            # Convert TXT to Markdown
+            with open(input_path, "r", encoding="utf-8") as input_file:
+                content = input_file.read()
+            markdown_content = f"# {filename}\n\n{content}"
+
+        elif file_extension == ".docx":
+            # Convert DOCX to Markdown
+            markdown_content = convert_docx_to_markdown(input_path)
+
+        elif file_extension == ".pdf":
+            # Convert PDF to Markdown
+            markdown_content = convert_pdf_to_markdown(input_path)
+
+        else:
+            raise ValueError(f"Unsupported file format: {file_extension}")
+
+        # Write the converted content to a markdown file
+        with open(output_path, "w", encoding="utf-8") as md_file:
+            md_file.write(markdown_content)
+        
+        return output_path  # Return the full path of the converted file
+
     except Exception as e:
-        print(f"Error during conversion: {str(e)}")
+        raise RuntimeError(f"Failed to convert to Markdown: {e}")
+
+
+def convert_docx_to_markdown(docx_path):
+    """
+    Converts a DOCX file to Markdown format.
+    
+    Parameters:
+        docx_path (str): The path to the DOCX file to convert.
+    
+    Returns:
+        str: The content in Markdown format.
+    """
+    document = Document(docx_path)
+    markdown_content = ""
+
+    # Iterate over paragraphs in the DOCX file
+    for para in document.paragraphs:
+        # Check for headings
+        if para.style.name.startswith('Heading'):
+            level = int(para.style.name.split()[-1])
+            markdown_content += f"{'#' * level} {para.text}\n\n"
+        else:
+            markdown_content += f"{para.text}\n\n"
+
+    return markdown_content
+
+
+def convert_pdf_to_markdown(pdf_path):
+    """
+    Converts a PDF file to Markdown format.
+    
+    Parameters:
+        pdf_path (str): The path to the PDF file to convert.
+    
+    Returns:
+        str: The content in Markdown format.
+    """
+    try:
+        with open(pdf_path, "rb") as file:
+            reader = PyPDF2.PdfReader(file)
+            markdown_content = ""
+
+            # Extract text from each page of the PDF
+            for page in reader.pages:
+                markdown_content += page.extract_text() + "\n\n"
+
+            return markdown_content
+    except Exception as e:
+        raise RuntimeError(f"Failed to convert PDF to Markdown: {e}")
 
 
 def markdown_to_html(markdown_path: str, grade: str) -> str:
@@ -199,4 +283,3 @@ def directory_tree_json_format(in_folder: str) -> dict:
         return {"error": f"Path {in_folder} is not a directory."}
 
     return build_tree(in_folder)
-

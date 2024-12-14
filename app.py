@@ -3,7 +3,7 @@ import Tools
 from flask import jsonify, Flask, request   # type: ignore
 from flask_cors import CORS                 # type: ignore
 from werkzeug.utils import secure_filename  # type: ignore
-from Tools import log
+from Tools import *
 
 app = Flask(__name__)
 CORS(app)
@@ -20,41 +20,92 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @app.route("/upload/<gradeLetter>/<gradeNumber>", methods=["POST"])
 def handleUploadFile(gradeLetter: str, gradeNumber: str):
-
-    
-
-    """Handles file upload and moves the uploaded file to .tmp folder"""
+    """
+    Handles file upload, converts it to Markdown, and moves the file 
+    to the appropriate grade-specific folder.
+    """
+    # Define grade path (e.g., "9/B")
     grade = f"{gradeLetter}/{gradeNumber}"
-    # Check if the file part exists in the request
+
+    # Check if the request contains a file part
     if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        return jsonify({"error": "No file part in the request"}), 400
 
     file = request.files['file']
-    
-    # If no file is selected
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
 
-    # Check if the file is of an allowed type
+    # Check if a file was selected
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+
+    # Validate the file type
     if file and allowed_file(file.filename):
-        # Sanitize the filename
+        # Sanitize filename
         filename = secure_filename(file.filename)
-        # Create the destination path in the UPLOAD_FOLDER
-        temp_path = os.path.join(UPLOAD_FOLDER + grade, filename)
+
+        # Define the temporary folder and file path
+        temp_folder = os.path.join(UPLOAD_FOLDER, 'temp')
+        temp_path = os.path.join(temp_folder, filename)
+
+        # Ensure the temp folder exists
+        os.makedirs(temp_folder, exist_ok=True)
 
         try:
-            # Save the file to the .tmp folder
+            # Save the uploaded file to the temp folder
             file.save(temp_path)
-            log(message=f" ||| Uploaded file {filename} ! |||", app_route=f"/upload/{gradeLetter}/{gradeNumber}", ip=request.remote_addr)
-            return jsonify({"success": f"File {filename} uploaded and saved to .tmp folder"}), 200
+            log(
+                message=f"Uploaded file {filename} saved to temporary folder.",
+                app_route=f"/upload/{gradeLetter}/{gradeNumber}",
+                ip=request.remote_addr
+            )
+
+            # Attempt to convert the file to Markdown
+            try:
+                converted_temp_path = convert_to_markdown(temp_path)
+
+                # Validate that the converted file exists
+                if not converted_temp_path or not os.path.exists(converted_temp_path):
+                    raise FileNotFoundError(f"Converted file does not exist: {converted_temp_path}")
+
+                # Define the grade folder and ensure it exists
+                grade_folder = os.path.join(UPLOAD_FOLDER, grade)
+                os.makedirs(grade_folder, exist_ok=True)
+
+                # Move the converted Markdown file to the grade folder
+                converted_filename = os.path.basename(converted_temp_path)
+                converted_path = os.path.join(grade_folder, converted_filename)
+                os.rename(converted_temp_path, converted_path)
+
+                log(
+                    message=f"File {filename} successfully converted to Markdown and moved to {converted_path}.",
+                    app_route=f"/upload/{gradeLetter}/{gradeNumber}",
+                    ip=request.remote_addr
+                )
+                os.remove(f"./content/temp/{filename}")
+                return jsonify({
+                    "success": f"File {filename} uploaded, converted to Markdown, and saved to {converted_path}"
+                }), 200
+
+            except Exception as e:
+                log(
+                    message=f"Error converting file {filename} to Markdown: {str(e)}",
+                    app_route=f"/upload/{gradeLetter}/{gradeNumber}",
+                    ip=request.remote_addr
+                )
+                return jsonify({"error": f"Failed to convert the file to Markdown: {str(e)}"}), 500
+
         except Exception as e:
-            log(message=f" ||| Failed to upload file {filename}! |||", app_route=request.path)
+            log(
+                message=f"Failed to upload file {filename}: {str(e)}",
+                app_route=request.path,
+                ip=request.remote_addr
+            )
             return jsonify({"error": f"Failed to save the file: {str(e)}"}), 500
-    else:
-        return jsonify({"error": "Invalid file type"}), 400
-    
+
+    # If the file type is invalid
+    return jsonify({"error": "Invalid file type"}), 400
 
 
 # Route for handling posterboard files

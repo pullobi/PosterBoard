@@ -26,24 +26,31 @@
         }
 
         function renderTree(tree, path) {
-            const sidebar = document.querySelector('.sidebar .content');
-            sidebar.innerHTML = '';
-            const ul = document.createElement('ul');
-            tree.children.forEach(entry => {
-                const li = document.createElement('li');
-                li.textContent = entry.name;
-                li.className = entry.type;
+    const sidebar = document.querySelector('.sidebar .content');
+    sidebar.innerHTML = '';
+    const ul = document.createElement('ul');
 
-                if (entry.type === 'directory') {
-                    li.addEventListener('click', () => fetchDirectory(`${path}/${entry.name}`));    
-                } else if (entry.type === 'file') {
-                    li.addEventListener('click', () => showFileContent(`${path}/${entry.name}`));
-                }
-
-                ul.appendChild(li);
-            });
-            sidebar.appendChild(ul);
+    tree.children.forEach(entry => {
+        // Skip any folder named "temp"
+        if (entry.type === 'directory' && entry.name === 'temp') {
+            return;
         }
+
+        const li = document.createElement('li');
+        li.textContent = entry.name;
+        li.className = entry.type;
+
+        if (entry.type === 'directory') {
+            li.addEventListener('click', () => fetchDirectory(`${path}/${entry.name}`));    
+        } else if (entry.type === 'file') {
+            li.addEventListener('click', () => showFileContent(`${path}/${entry.name}`));
+        }
+
+        ul.appendChild(li);
+    });
+
+    sidebar.appendChild(ul);
+}
 
         async function showFileContent(filePath) {
             const response = await fetch(`/get/file?path=${encodeURIComponent(filePath)}`);
